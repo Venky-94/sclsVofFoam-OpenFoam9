@@ -1,0 +1,5 @@
+This is a sample case of an air bubble growing and departing from a capillary needle submerged in propylene glycol.
+
+Flow is along x direction. Refer to the blockMeshDict for details of the mesh. A uniform grid of 0.02mm*0.02mm is created in the region where volume fraction change is expected. The deltaX value is specified in the transportProperties file.
+
+setFieldsDict is used to patch the volume fraction within the capillary needle. All you would need to do is decompose the file by modifying the decomposeParDict based on your availability of cores and run sclsVofFoam in parallel.
