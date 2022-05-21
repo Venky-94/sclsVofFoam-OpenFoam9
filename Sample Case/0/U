@@ -1,0 +1,87 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2012                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    object      U;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    upperwall
+    {
+        type            noSlip;
+    }
+	lowerwall
+    {
+        type            noSlip;
+    }
+    pressure_outlet
+    {
+        type            pressureInletOutletVelocity;
+        value           uniform (0 0 0);
+    }
+    orificewall
+    {
+        type            noSlip;
+	}
+	airinlet
+    {
+		type			codedFixedValue;
+		value			uniform (0 0 0);
+		name		 	parabolicinlet;
+		
+		codeOptions
+		#{
+			-I$(LIB_SRC)/finiteVolume/lnInclude \
+			-I$(LIB_SRC)/meshTools/lnInclude
+		#};
+		
+		codeInclude
+		#{
+			#include "fvCFD.H"
+			#include <cmath>
+			#include <iostream>
+		#};
+		
+		code
+		#{
+			const fvPatch& boundaryPatch = patch();
+			const vectorField& Cf = boundaryPatch.Cf();
+			vectorField& field = *this;
+			
+			const scalar U_0 = 0.173604770519263;	//Max centreline velocity//
+			const scalar p_ctr = 0;			//Centreline i.e. axis line//
+			const scalar p_r = 0.000597;		//Radius//
+			
+			forAll(Cf, faceI)
+			{
+				const scalar y = Cf[faceI][1];
+				field[faceI] = vector(U_0*(1-(pow((y-p_ctr)/p_r,2))),0,0);
+			}
+		#};
+	}
+    frontPlane
+    {
+        type            wedge;
+    }
+	backPlane
+    {
+        type            wedge;
+    }
+}
+
+
+// ************************************************************************* //
